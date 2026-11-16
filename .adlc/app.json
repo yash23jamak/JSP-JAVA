@@ -1,0 +1,50 @@
+{
+  "$schema": "./schema/app.schema.json",
+  "schemaVersion": 1,
+  "id": "java-01",
+  "name": "JAVA",
+  "domain": "java-jsp app",
+  "owner": "<owning squad, e.g. Onboarding squad>",
+  "services": [
+    "<service or area>"
+  ],
+  "tests": {
+    "runner": "command",
+    "command": "mvn -B -q test{? -Dtest={classes} -Dsurefire.failIfNoSpecifiedTests=false}",
+    "junitReport": "**/target/surefire-reports/TEST-*.xml",
+    "suite": [],
+    "smoke": [],
+    "regressionTest": "src/test/java/regression/{TicketId}RegressionTest.java",
+    "setup": "mvn -B -q -DskipTests test-compile"
+  },
+  "quality": {
+    "sourceDirs": [
+      "src/"
+    ],
+    "maxFiles": {
+      "bug-fix": 3,
+      "change": 8
+    },
+    "staticCheck": "mvn -B -q -o -DskipTests test-compile"
+  },
+  "environments": [
+    {
+      "name": "dev",
+      "label": "Development",
+      "production": false,
+      "promotion": "auto"
+    },
+    {
+      "name": "stage",
+      "label": "Stage",
+      "production": false,
+      "promotion": "approval"
+    },
+    {
+      "name": "prod",
+      "label": "Production",
+      "production": true,
+      "promotion": "approval"
+    }
+  ]
+}

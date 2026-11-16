@@ -1,0 +1,16 @@
+[
+  {
+    "id": "RB-01",
+    "title": "Restart the payslip generator worker",
+    "owner": "HR Platform SRE",
+    "approved": true,
+    "risk": "low",
+    "env": "prod",
+    "command": "node ops/runbooks/rb-01-restart-payslip-worker.js {state} {action}",
+    "knowledgeArticle": "KB-0001",
+    "service": "Payslips",
+    "monitor": "payslip-queue",
+    "keywords": ["payslip queue", "payslips stuck", "payslip worker"],
+    "symptoms": ["cannot download payslip", "payslip not generated", "payslip missing"]
+  }
+]

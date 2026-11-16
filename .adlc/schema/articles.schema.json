@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "adlc-knowledge-articles-v1",
+  "title": "ADLC knowledge articles (.adlc/knowledge/articles.json)",
+  "description": "How-tos and known errors shown to support engineers with matching tickets.",
+  "oneOf": [
+    { "type": "array", "items": { "$ref": "#/$defs/article" } },
+    {
+      "type": "object",
+      "required": ["entries"],
+      "additionalProperties": false,
+      "properties": { "$schema": { "type": "string" }, "entries": { "type": "array", "items": { "$ref": "#/$defs/article" } } }
+    }
+  ],
+  "$defs": {
+    "article": {
+      "type": "object",
+      "required": ["id", "title", "kind"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[A-Z][A-Z0-9-]{1,59}$", "examples": ["KB-0001"] },
+        "title": { "type": "string" },
+        "kind": { "enum": ["how-to", "known-error", "faq", "procedure"] },
+        "service": { "type": "string" },
+        "summary": { "type": "string", "description": "1-3 sentences: symptom, cause, what to do" },
+        "doc": { "type": "string", "description": "Where the full text lives, e.g. docs/billing.md#discounts" },
+        "spec": { "type": "string" },
+        "runbook": { "type": "string", "description": "Runbook id for a known error" },
+        "updated": { "type": "string", "format": "date" },
+        "draft": { "type": "boolean" },
+        "source": { "type": "string" },
+        "review": { "type": "string" }
+      }
+    }
+  }
+}

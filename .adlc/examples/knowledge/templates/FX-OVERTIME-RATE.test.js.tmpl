@@ -1,0 +1,10 @@
+'use strict';
+// Regression test for {{ticketId}}: {{title}}
+// Added by the ADLC pipeline as the reproduction test; it stays in CI and in the synthetic checks. Spec {{spec}}.
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const { overtimePay } = require('../../src/pay');
+
+test('{{ticketId}}: 5 overtime hours at $20/h pay $150 ({{spec}})', () => {
+  assert.equal(overtimePay(5, 20), 150);
+});

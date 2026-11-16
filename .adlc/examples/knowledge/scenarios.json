@@ -1,0 +1,13 @@
+[
+  {
+    "id": "overtime-defect",
+    "label": "Defect: overtime paid at the normal rate",
+    "expected": "Steps 1 → 2 → 4 → 5: test-first hotfix, PR, merge approval, release, promotion",
+    "ticket": {
+      "title": "Overtime paid at normal rate",
+      "description": "Employee worked 5 hours overtime at $20/h and was paid $100 instead of $150.",
+      "service": "Payroll",
+      "impact": "high"
+    }
+  }
+]
