@@ -1,0 +1,41 @@
+[
+  {
+    "id": "FX-OVERTIME-RATE",
+    "slug": "overtime-rate",
+    "title": "Overtime paid at the normal hourly rate",
+    "component": "payroll",
+    "service": "Payroll",
+    "spec": "PAY-03",
+    "knowledgeArticle": "KB-0002",
+    "risk": "standard",
+    "classification": "bug-fix",
+    "keywords": ["overtime", "time and a half", "1.5x", "extra hours"],
+    "symptoms": ["overtime paid wrong", "overtime not paid"],
+    "probableCause": "overtimePay() in src/pay.js multiplies overtime hours by the base rate instead of 1.5x the base rate.",
+    "commitScope": "payroll",
+    "commitSubject": "pay overtime at 1.5x the base hourly rate",
+    "patches": [
+      { "file": "src/pay.js", "find": "return hours * rate;", "replace": "return hours * rate * 1.5;" }
+    ],
+    "regressionTest": "templates/FX-OVERTIME-RATE.test.js.tmpl"
+  },
+  {
+    "id": "FX-EXAMPLE-SPEC-DRIVEN",
+    "slug": "max-weekly-hours",
+    "title": "Weekly hour limit differs from the specification (PAY-05: {{PAY_05}})",
+    "component": "config",
+    "service": "Payroll",
+    "spec": "PAY-05",
+    "risk": "standard",
+    "classification": "bug-fix (configuration)",
+    "keywords": ["weekly hours", "hour limit", "maximum hours"],
+    "uses": ["PAY-05"],
+    "probableCause": "config/payroll.json sets maxWeeklyHours to a different value than the specification (PAY-05 = {{PAY_05}}).",
+    "commitScope": "config",
+    "commitSubject": "align the weekly hour limit with PAY-05 ({{PAY_05}})",
+    "patches": [
+      { "file": "config/payroll.json", "pattern": "\"maxWeeklyHours\": \\d+", "replace": "\"maxWeeklyHours\": {{PAY_05}}" }
+    ],
+    "regressionTest": "templates/FX-EXAMPLE-SPEC-DRIVEN.test.js.tmpl"
+  }
+]

@@ -1,0 +1,14 @@
+'use strict';
+// Regression test for {{ticketId}}: {{title}}
+// Added by the ADLC pipeline for an approved business-rule change. Spec {{spec}}.
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const { validateTimesheet } = require('../../src/timesheet');
+
+test('{{ticketId}}: {{to}} hours in a week are accepted ({{spec}})', () => {
+  assert.doesNotThrow(() => validateTimesheet({ hours: {{to}} }));
+});
+
+test('{{ticketId}}: {{to | plus1}} hours in a week are rejected ({{spec}})', () => {
+  assert.throws(() => validateTimesheet({ hours: {{to | plus1}} }));
+});

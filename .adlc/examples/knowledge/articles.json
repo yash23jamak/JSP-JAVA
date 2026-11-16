@@ -1,0 +1,4 @@
+[
+  { "id": "KB-0001", "title": "Payslip queue backlog: generator worker not running", "kind": "known-error", "service": "Payslips", "runbook": "RB-01", "updated": "2026-10-01" },
+  { "id": "KB-0002", "title": "How overtime is calculated", "kind": "how-to", "service": "Payroll", "spec": "PAY-03", "updated": "2026-10-01" }
+]

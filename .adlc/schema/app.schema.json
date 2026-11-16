@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "adlc-app-manifest-v1",
+  "title": "ADLC application manifest (.adlc/app.json)",
+  "type": "object",
+  "required": ["schemaVersion", "id", "name", "tests"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "const": 1 },
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]{1,39}$" },
+    "name": { "type": "string" },
+    "domain": { "type": "string", "description": "Business domain, e.g. 'E-commerce checkout', 'HR leave management'" },
+    "description": { "type": "string" },
+    "owner": { "type": "string" },
+    "services": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "tests": {
+      "type": "object",
+      "required": ["runner", "regressionTest"],
+      "additionalProperties": false,
+      "properties": {
+        "runner": { "enum": ["node-test", "command"] },
+        "suite": { "type": "array", "items": { "type": "string" }, "description": "node-test: glob patterns for the full suite" },
+        "smoke": { "type": "array", "items": { "type": "string" }, "description": "node-test: patterns; command: test files passed as {files}" },
+        "command": { "type": "string", "description": "command runner: shell command. Placeholders for the selected test files (empty for the whole suite): {files} (quoted paths), {classes} (class names, comma-separated), {class-args:FLAG} (FLAG Class for each), {filter} (dotnet test filter), {packages} (Go-style folders), {names}. {?...} keeps its content only when files are selected, e.g. mvn -B test{? -Dtest={classes}}" },
+        "junitReport": { "type": "string", "description": "command runner: test report relative to the repo root: a file, a folder (every .xml/.trx in it) or a glob such as target/surefire-reports/*.xml. JUnit XML, .NET TRX and NUnit 3 XML are read" },
+        "workdir": { "type": "string", "description": "Subfolder the stack lives in, e.g. backend; commands run there. Omit for the repository root" },
+        "toolchain": { "type": "object", "additionalProperties": { "type": "string" }, "description": "Language versions the project needs, e.g. { \"java\": \"17\" }; checked against the platform image (REQ-027)" },
+        "regressionTest": { "type": "string", "description": "Path for generated regression tests. {ticketId} = TKT-1042, {TicketId} = Tkt1042 (valid class name), {ticket_id} = tkt_1042; e.g. test/regression/{ticketId}.test.js, src/test/java/regression/{TicketId}RegressionTest.java" },
+        "setup": { "type": "string", "description": "Installs dependencies in a fresh checkout before its first test run, e.g. npm ci --prefer-offline --no-audit --no-fund" },
+        "affectedCommand": { "type": "string", "pattern": "\\{files\\}", "description": "Runs only the tests affected by the changed files ({files}), e.g. npx vitest related --run --passWithNoTests ... {files}. Small, low-risk fixes use it before review; the full suite then runs after the merge" },
+        "setupTimeoutMs": { "type": "integer", "minimum": 1000 },
+        "dependencyDirs": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[\\w.@-][\\w.@/-]*$" },
+          "description": "Folders the setup produces that every fix checkout with the same lockfiles can share from a cache (default for npm, pnpm and yarn: [\"node_modules\"]; [] turns caching off)"
+        },
+        "timeoutMs": { "type": "integer", "minimum": 1000, "description": "Limit per test run in ms (default 30 min for the command runner, 2 min for node-test); a run over the limit is stopped and fails" }
+      }
+    },
+    "quality": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sourceDirs": { "type": "array", "items": { "type": "string" } },
+        "maxFiles": {
+          "type": "object",
+          "properties": { "bug-fix": { "type": "integer" }, "change": { "type": "integer" } }
+        },
+        "staticCheck": { "type": "string", "description": "'builtin' (JS/JSON syntax), 'none', or a shell command run in the worktree" }
+      }
+    },
+    "database": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "REQ-025: where the application keeps its database migrations. A fix may add migrations here (never change applied ones); the application's own pipeline applies them on deploy.",
+      "properties": {
+        "migrations": { "type": "array", "items": { "type": "string" }, "description": "Folders holding migration files, e.g. prisma/migrations/, src/main/resources/db/migration/" },
+        "schema": { "type": "array", "items": { "type": "string" }, "description": "Files describing the current schema that change with each migration, e.g. prisma/schema.prisma or an EF Core model snapshot" },
+        "tool": { "type": "string", "description": "For display: prisma, flyway, liquibase, ef-core, alembic, rails, knex, sequelize or sql" },
+        "engine": { "enum": ["postgres"], "description": "REQ-026: the database engine. With postgres and SQL migrations (prisma, flyway, sql) the AI and the checks use a throwaway PostgreSQL built from the migrations; no database is connected to" }
+      }
+    },
+    "environments": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "pattern": "^[a-z][a-z0-9-]{1,19}$" },
+          "label": { "type": "string" },
+          "production": { "type": "boolean" },
+          "promotion": { "enum": ["approval", "auto"], "default": "approval" },
+          "url": { "type": "string", "description": "Base URL of the environment (passed to smoke commands as ADLC_ENV_URL)" },
+          "versionUrl": { "type": "string", "description": "Endpoint returning JSON with the deployed commit, used for verification" },
+          "versionField": { "type": "string", "default": "commit" },
+          "deploy": { "$ref": "#/$defs/deploy" }
+        }
+      }
+    },
+    "deploy": { "$ref": "#/$defs/deploy" },
+    "monitors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "env", "command"],
+        "properties": {
+          "id": { "type": "string" },
+          "env": { "type": "string" },
+          "command": { "type": "string", "description": "Run in the deployed release folder; {state} = the environment's ops-state file" },
+          "service": { "type": "string" },
+          "impact": { "enum": ["low", "medium", "high", "critical"] },
+          "title": { "type": "string" }
+        }
+      }
+    },
+    "faults": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "label", "env", "command"],
+        "properties": {
+          "id": { "type": "string" },
+          "label": { "type": "string" },
+          "env": { "type": "string" },
+          "command": { "type": "string" },
+          "monitor": { "type": "string" }
+        }
+      }
+    },
+    "hooks": {
+      "type": "object",
+      "properties": { "afterRuleChange": { "type": "string" } }
+    },
+    "storefront": {
+      "type": "object",
+      "properties": { "module": { "type": "string" }, "page": { "type": "string" } }
+    }
+  },
+  "$defs": {
+    "deploy": {
+      "type": "object",
+      "required": ["adapter"],
+      "properties": {
+        "adapter": { "enum": ["azure-pipelines", "github-actions", "command", "local-checkout"] },
+        "azure": {
+          "type": "object",
+          "properties": { "organization": { "type": "string" }, "project": { "type": "string" }, "pipelineId": { "type": "integer" } }
+        },
+        "github": {
+          "type": "object",
+          "properties": { "owner": { "type": "string" }, "repo": { "type": "string" }, "workflow": { "type": "string" } }
+        },
+        "command": { "type": "string" },
+        "timeoutMs": { "type": "integer" }
+      }
+    }
+  }
+}

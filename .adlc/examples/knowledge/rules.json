@@ -1,0 +1,28 @@
+[
+  {
+    "id": "PAY-05",
+    "var": "PAY_05",
+    "label": "Maximum weekly hours",
+    "sources": [
+      { "file": "docs/spec/payroll.spec.md", "pattern": "at most \\*\\*(\\d+)\\*\\* hours" },
+      { "file": "config/payroll.json", "json": "maxWeeklyHours" }
+    ],
+    "change": {
+      "template": "CR-WEEKLY-HOURS",
+      "detect": {
+        "when": "\\b(hours?|weekly|per week)\\b",
+        "values": ["\\b(?:maximum|max|limit|up to|at most)\\b[^\\d]{0,30}?(\\d{1,3})\\b", "\\b(\\d{1,3})\\s*hours\\b"]
+      },
+      "slug": "weekly-hours-{{to}}",
+      "title": "Maximum weekly hours {{from}} → {{to}}",
+      "probableCause": "Business-rule change approved: PAY-05 allows {{to}} hours per week (was {{from}}).",
+      "commitScope": "config",
+      "commitSubject": "allow up to {{to}} hours per week (PAY-05)",
+      "edits": [
+        { "file": "config/payroll.json", "pattern": "\"maxWeeklyHours\": \\d+", "value": "\"maxWeeklyHours\": {{to}}" },
+        { "file": "docs/spec/payroll.spec.md", "pattern": "at most \\*\\*\\d+\\*\\* hours", "value": "at most **{{to}}** hours" }
+      ],
+      "regressionTest": "templates/CR-WEEKLY-HOURS.test.js.tmpl"
+    }
+  }
+]

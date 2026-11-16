@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "payroll",
+  "name": "Payroll Service",
+  "domain": "HR payroll",
+  "description": "Monthly payroll calculation and payslips",
+  "owner": "HR Platform squad",
+  "services": ["Payroll", "Payslips", "Tax", "Integrations"],
+  "tests": {
+    "runner": "command",
+    "command": "npx jest {files} --ci --reporters=default --reporters=jest-junit",
+    "junitReport": "junit.xml",
+    "smoke": ["test/smoke"],
+    "regressionTest": "test/regression/{ticketId}.test.js",
+    "timeoutMs": 300000
+  },
+  "quality": {
+    "sourceDirs": ["src/"],
+    "maxFiles": { "bug-fix": 3, "change": 8 },
+    "staticCheck": "npx eslint --max-warnings=0 {files}"
+  },
+  "environments": [
+    { "name": "dev", "label": "Development", "promotion": "auto", "url": "https://payroll-dev.acme.internal" },
+    { "name": "stage", "label": "Stage", "promotion": "approval", "url": "https://payroll-stage.acme.internal", "versionUrl": "https://payroll-stage.acme.internal/version" },
+    { "name": "prod", "label": "Production", "production": true, "promotion": "approval", "url": "https://payroll.acme.com", "versionUrl": "https://payroll.acme.com/version" }
+  ],
+  "deploy": { "adapter": "azure-pipelines", "azure": { "organization": "acme", "project": "HR", "pipelineId": 42 } },
+  "monitors": [
+    { "id": "payslip-queue", "env": "prod", "command": "node ops/monitors/payslip-queue.js {state}", "service": "Payslips", "impact": "high", "title": "Payslip generation queue stalled" }
+  ]
+}
